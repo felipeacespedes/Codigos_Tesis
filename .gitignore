@@ -1,0 +1,20 @@
+# 1. Ignorar absolutamente todo por defecto (archivos y carpetas)
+*
+*/
+
+# 2. Excepciones: NO ignorar el propio archivo de configuración de Git
+!.gitignore
+
+# 3. Excepciones para carpetas: Permitir que Git explore las subcarpetas 
+# para que pueda encontrar los scripts adentro
+!**/
+
+# 4. Excepciones para archivos de código: NO ignorar scripts de Python ni de R
+!**/*.py
+!**/*.R
+!**/*.r
+
+# 5. Volver a ignorar carpetas ocultas de Spyder o RStudio si existieran
+**/.spyproject/
+**/.Rproj.user/
+**/__pycache__/
