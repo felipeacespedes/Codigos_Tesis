@@ -4,11 +4,14 @@ Created on Thu Apr 17 11:39:45 2025
 
 @author: felip
 """
+#%% Importamos librerías
+import os
+#%cd C:/Users/felip/Desktop/U/Tesis/Datos/Intoxicados/codes
 import pandas as pd
 import Ciclos_GPT as cg
 import Ciclos_Viento_GPT as cvg
 import Ciclos_Viento_GPT_mod as cvgm
-
+import CVGM_GeminiRev as cvgm_gr
 
 #%% Importamos DF_h y DF_d
 
@@ -16,12 +19,12 @@ path = 'C:/Users/felip/Desktop/U/Tesis/Datos/Intoxicados/'
 DF_h = pd.read_csv(path+'DF_h.csv',index_col='date',parse_dates=True)
 
 # Definimos dfs viento 
-WD = DF_h[['wd_VE','wd_princ','wd_dmc','wd_CQ','wd_quint']]
-WS = DF_h[['ws_VE','ws_princ','ws_dmc','ws_CQ','ws_quint']]
+WD = DF_h[['wd_VE','wd_princ','wd_dmc','wd_CQ']]#,'wd_quint']]
+WS = DF_h[['ws_VE','ws_princ','ws_dmc','ws_CQ']]#,'ws_quint']]
 WD = WD.rename(columns={'wd_VE':'Ventanas','wd_princ':'Principal',
-                        'wd_dmc':'DMC','wd_CQ':'Centro_Quintero','wd_quint':'Quintero'})
+                        'wd_dmc':'DMC','wd_CQ':'Centro_Quintero'})#,'wd_quint':'Quintero'})
 WS = WS.rename(columns={'ws_VE':'Ventanas','ws_princ':'Principal',
-                        'ws_dmc':'DMC','ws_CQ':'Centro_Quintero','ws_quint':'Quintero'})
+                        'ws_dmc':'DMC','ws_CQ':'Centro_Quintero'})#,'ws_quint':'Quintero'})
 
 #%% Antiguo
 
@@ -86,7 +89,7 @@ data = DF_h.copy()
 data[['p_era5','t_era5','hr_era5']] = data[['p_era5','t_era5','hr_era5']].interpolate()
 
 
-#%% PLoteamos
+#%% Ploteamos
 
 # ERA5
 cols = ['p_era5','t_era5','hr_era5']
@@ -109,6 +112,13 @@ cvgm.plot_wd_ws_u_v(WD, WS, cycle='daily')
 # Anual
 cvgm.plot_wd_ws_u_v(WD, WS, cycle='yearly')
 
+#%% Ploteamos ciclos de viento con U y V por estación del año
+seasonal_save_dir = 'C:/Users/felip/Desktop/U/Tesis/Figs/Sinca/Wind_Season'
+cvgm.plot_wd_ws_u_v_seasonal(WD, WS, save_dir=seasonal_save_dir, show=True)
+
+#%% Ploteamos ciclos de viento con U y V por mes
+monthly_save_dir = 'C:/Users/felip/Desktop/U/Tesis/Figs/Sinca/Wind_Month'
+cvgm.plot_wd_ws_u_v_monthly(WD, WS, save_dir=monthly_save_dir, show=True)
 
 #%%#########################################################
 ############################################################

@@ -69,7 +69,7 @@ def map_topo_pygmt(output_file):
     fig = pygmt.Figure()
 
     # Set the color palette
-    pygmt.makecpt(cmap="geo", series=[0, 700])
+    pygmt.makecpt(cmap="geo", series=[0, 400])
     
     # Plot topography
     proj = "M5/5/5c"
@@ -93,19 +93,19 @@ def map_topo_pygmt(output_file):
     fig.plot(data=path_zi, pen="0.8p,red")
     
     # Plot oleoductos
-    od = gpd.read_file(path_od)
-    comb = 'GASOLINA 93/97 - KEROSENE DOMESTICO - DIESEL'
-    comb = 'PETROLEO CRUDO'
-    od = od[od['COMBUSTIBL']==comb]
+    # od = gpd.read_file(path_od)
+    # comb = 'GASOLINA 93/97 - KEROSENE DOMESTICO - DIESEL'
+    # comb = 'PETROLEO CRUDO'
+    # od = od[od['COMBUSTIBL']==comb]
     # od = od[od['COMBUSTIBL']=='GASOLINA 93/97 - KEROSENE DOMESTICO - DIESEL']
     # od = od[od['COMBUSTIBL']=='GASOLINA 93/97  - MEZCLA PROPANO-BUTANO LICUADO']
     # od = od[od['COMBUSTIBL']=='FUEL OIL N5']
     # od = od[od.index==0]
-    fig.plot(data=od, pen="0.8p,dimgrey")
+    # fig.plot(data=od, pen="0.8p,dimgrey")
     
     # Plot gasoducto
-    gd = gpd.read_file(path_gd)
-    gd = gd[gd['NOMBRE']=='GASODUCTO QUINTERO-QUILLOTA 24 PULGADAS']
+    # gd = gpd.read_file(path_gd)
+    # gd = gd[gd['NOMBRE']=='GASODUCTO QUINTERO-QUILLOTA 24 PULGADAS']
     # gd = gd[gd.index==0]
     # fig.plot(data=gd, pen="0.8p,grey")
 
@@ -120,8 +120,6 @@ def map_topo_pygmt(output_file):
     # Plot test: bloque ENAP
     # fig.plot(data=path_t, pen="10p,orange")
     
-    
-
     
     # Style de las estaciones
     style="c0.2c"
@@ -178,10 +176,10 @@ def map_topo_pygmt(output_file):
 
 
     # Add colorbar
-    pygmt.config(FONT_ANNOT_PRIMARY="8,Helvetica,black")
-    pygmt.config(FONT_LABEL="8p,Helvetica,black")
-    fig.colorbar(position="jTR+o-0.5/0.3+w2.5/0.15c+v",
-                 frame=["x+lTopography [m]"])
+    pygmt.config(FONT_ANNOT_PRIMARY="13,Helvetica,black")
+    pygmt.config(FONT_LABEL="13p,Helvetica,black")
+    fig.colorbar(position="jTR+o-0.6/0.3+w3/0.2c+v",
+                 frame=["x+lTopografía [m]"])
 
 
     # Add inset globe

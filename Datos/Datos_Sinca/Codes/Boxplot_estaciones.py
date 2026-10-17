@@ -19,6 +19,10 @@ HCNM = pd.read_csv(path+'HCNM_mod_df.csv',# HCNM_mod_lod_df ó HCNM_orig_df
 
 #%% Ploteamos Boxplot total por estación con mpl 
 
+date_1 = pd.to_datetime('2019-01-01 00:00:00')
+date_2 = pd.to_datetime('2023-12-31 23:59:00')
+
+
 ax = HCNM.plot(kind='box',figsize=(15,10))
 plt.ylim(0,1)
 plt.grid()

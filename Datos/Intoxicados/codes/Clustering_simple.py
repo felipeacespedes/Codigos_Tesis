@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches 
+import matplotlib.patches as patches
 from matplotlib.colors import BoundaryNorm
 from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import TruncatedSVD #, PCA
@@ -140,7 +140,8 @@ resumen_clusters["Intx medio"] = (
     resumen_clusters["Total Intx"] / resumen_clusters["Dias Intx"]).round(2)
 
 # Guardamos
-resumen_clusters.to_csv(path_data+'resumen_clusters.csv')
+# resumen_clusters.to_csv(path_data+'resumen_clusters.csv')
+
 
 print("==================== Resumen de intoxicaciones por cluster ====================")
 print(resumen_clusters)
@@ -151,6 +152,8 @@ for cl in sorted(df["Cluster"].unique()):
     dates = df.loc[df["Cluster"] == cl].index
     cluster_dates[cl] = dates
 
+# Guardamos df con 
+# df.to_csv(path_data+'df_clusters.csv')
 
 #%% 6. Visualize PCA space with variable loadings
 
@@ -265,30 +268,45 @@ for cl in cluster_median.index:
 #%%# 10-11. Analisis Centrado en Eventos  ####
 
 # Definimos variables
-cols = [
-        'HCNM_CQ','NO_CQ','NO2_CQ','O3_CQ',
-        'SO2_CQ','MP25_CQ','MP10_CQ','CO_CQ',
+# cols = [
+#         'HCNM_CQ','NO_CQ','NO2_CQ','O3_CQ',
+#         'SO2_CQ','MP25_CQ','MP10_CQ','CO_CQ',
         
-        'ies_princ','blh_era5','hr_dmc','r_dmc',
-        'ws_dmc','u_dmc','v_dmc','slp_dmc',
-        'slp_dmc_diff','u_princ','v_CC','t_dmc',
-        ]
+#         'ies_princ','blh_era5','hr_dmc','r_dmc',
+#         'ws_dmc','u_dmc','v_dmc','slp_dmc',
+#         'slp_dmc_diff','u_princ','v_CC','t_dmc',
+#         ]
+cols = [
+        'wd_VE','ws_VE','u_VE','v_VE',
+        'wd40_princ','ws40_princ','u40_princ','v40_princ',
+        'wd_princ','ws_princ','u_princ','v_princ',
+        'wd_dmc','ws_dmc','u_dmc','v_dmc',
+        'wd_CQ','ws_CQ','u_CQ','v_CQ',
+        'wd_quint','ws_quint','u_quint','v_quint',
+        'wd_CC','ws_CC','u_CC','v_CC'
 
+        ]
 
 # Opción de usar DF de datos diarios para valores diarios
 # DF_d_file = 'DF_dhm.csv'
-DF_d_file = 'DF_d.csv'
-
+DF_d_file = 'DF_dhm.csv'
 DF_d = pd.read_csv(path_data+DF_d_file, index_col='date', parse_dates=True)
 d1 = pd.to_datetime('2022-01-01 00:00:00')
 d2 = pd.to_datetime('2023-12-31 23:00:00')
 DF_d = DF_d.loc[d1:d2]
 
 # Importamos DF datos horarios para ciclos diarios
-DF_h = pd.read_csv(path_data+'DF_h.csv', index_col='date', parse_dates=True)
+DF_h_file='DF_h.csv'
+DF_h = pd.read_csv(path_data+DF_h_file, index_col='date', parse_dates=True)
 d1 = pd.to_datetime('2022-01-01 00:00:00')
 d2 = pd.to_datetime('2023-12-31 23:00:00')
 DF_h = DF_h.loc[d1:d2]
+
+
+# Cargamos df_clusters para correr solo desde aquí
+df = pd.read_csv(path_data+'df_clusters.csv', index_col='date', parse_dates=True)
+n_clusters=4
+
 
 ##################################################################################
 #%% 10: ACE ±5 días valores diarios originales o anomalía, opción std. robusto ###
@@ -490,19 +508,26 @@ for cl in range(n_clusters):
 ################################################################
 #%% 11.1: Ciclos de 72h (n-1, n, n+1) a partir de DF horario ###
 
-# Guardamos valores por cluster
-var_estd = 'v_CC'
-Mean_all_cluster = {}
-Median_all_cluster = {}
-Mean_evt_cluster = {}
-Median_evt_cluster = {}
+# Guardamos valores por variable para Cluster
+CL = 0
+Mean_all = pd.DataFrame(columns=cols, index=np.arange(0,72))
+Median_all = pd.DataFrame(columns=cols, index=np.arange(0,72))
+Mean_evt = pd.DataFrame(columns=cols, index=np.arange(0,72))
+Median_evt = pd.DataFrame(columns=cols, index=np.arange(0,72))
+
+
 
 # Plot por cluster
 for cl in range(n_clusters):
     dates_cl = df.loc[df["Cluster"]==cl].index
     dates_evt = df.loc[(df["Cluster"]==cl) & (df["T59"]>0)].index
     
-    fig, axes = plt.subplots(4,5,figsize=(15,8), sharex=True)
+    ## 4x5 subplots ##
+    # fig, axes = plt.subplots(4,5,figsize=(15,8), sharex=True)
+    
+    ## 7x5 subplots ##
+    fig, axes = plt.subplots(4,7,figsize=(20,10), sharex=True)
+
     axes = axes.flatten(order='F')
     x = np.arange(72)  # horas: 0..71
     
@@ -517,18 +542,22 @@ for cl in range(n_clusters):
         if stats_all:
             ax.plot(x, stats_all['mean'], "--", color="tab:blue", alpha=0.4, lw=0.8, label="Media cluster")
             ax.plot(x, stats_all['median'], color="tab:blue", alpha=0.6, lw=1.2, label="Mediana cluster")
-            ax.fill_between(x, stats_all['p25'], stats_all['p75'], color="tab:blue", alpha=0.08,label="P25–P75 cluster")
-            if var == var_estd:
-                Mean_all_cluster[str(cl)] = stats_all['mean']
-                Median_all_cluster[str(cl)] = stats_all['median']
+            if var[0:2] != 'wd':
+                ax.fill_between(x, stats_all['p25'], stats_all['p75'], color="tab:blue", alpha=0.08,label="P25–P75 cluster")
+            if cl == CL: 
+                Mean_all.loc[:,var] = stats_all['mean'].round(decimals=2)
+                Median_all.loc[:,var] = stats_all['median'].round(decimals=2)
+
         if stats_evt:
             ax.plot(x, stats_evt['mean'], "--", color="tab:orange", alpha=0.8, lw=1.2, label="Media eventos")
             ax.plot(x, stats_evt['median'], color="tab:orange", alpha=0.95, lw=1.8, label="Mediana eventos")
-            ax.fill_between(x, stats_evt['p25'], stats_evt['p75'], color="tab:orange", alpha=0.15,label="P25–P75 eventos")
-            if var == var_estd:
-                Mean_evt_cluster[str(cl)] = stats_evt['mean']
-                Median_evt_cluster[str(cl)] = stats_evt['median']
-        
+            if var[0:2] != 'wd':
+                ax.fill_between(x, stats_evt['p25'], stats_evt['p75'], color="tab:orange", alpha=0.15,label="P25–P75 eventos")
+            if cl == CL: 
+                Mean_evt.loc[:,var] = stats_evt['mean'].round(decimals=2)
+                Median_evt.loc[:,var] = stats_evt['median'].round(decimals=2)
+                
+
         # Líneas divisorias entre días (24h,48h)
         ax.axvline(24, color="k", ls=":", alpha=0.6)
         ax.axvline(48, color="k", ls=":", alpha=0.6)
@@ -539,11 +568,33 @@ for cl in range(n_clusters):
         ax.grid(alpha=0.2)
         ax.tick_params('both',labelsize=11.5)
         
-        if i==0:
+        # Ylim para variables de viento:
+        if var[0:2] == 'wd':
+            ax.set_ylim(0,360)
+            
+        elif var[0:2] == 'ws':
+            if DF_h_file[3:5]=='ha':
+                ax.set_ylim(-4,4)
+            else:
+                ax.set_ylim(0,7.5)
+                
+        elif var[0:1] == 'u':
+            ax.set_ylim(-5,5)
+            
+        elif var[0:1] == 'v':
+            ax.set_ylim(-5,5)
+        
+        if i==0 and var == 'HCNM_CQ':
             fig.legend(loc="upper left", bbox_to_anchor=(0.85,0.93), 
                        frameon=False,borderaxespad=0.)
     
-    fig.suptitle(f"Ciclo diario [n-1 , n , n+1] — Cluster {cl}", fontsize=16, y=0.986)
+    # Anomalía o Serie original
+    if DF_h_file[3:5]=='ha':
+        fig.suptitle(f"Ciclo diario [n-1 , n , n+1] — Cluster {cl}, Anomalía", 
+                     fontsize=16, y=0.986)
+    else:
+        fig.suptitle(f"Ciclo diario [n-1 , n , n+1] — Cluster {cl}, Serie original", 
+                     fontsize=16, y=0.986)
     plt.tight_layout(w_pad=0.4)#rect=[0,0,0.91,1])
             
     # =========================================================================
@@ -552,44 +603,48 @@ for cl in range(n_clusters):
     # Because you used flatten(order='F'), the indices of the axes are:
     # HCNM_CQ: 0, SO2_CQ: 4, MP25_CQ: 5, ies_princ: 8, blh_era5: 9, ws_dmc: 12
     
-    # Get the bounding boxes of the key subplots in figure coordinates (from 0 to 1)
-    bbox0 = axes[0].get_position()
-    bbox4 = axes[4].get_position()
-    bbox5 = axes[5].get_position()
-    bbox9 = axes[9].get_position()
-    bbox12 = axes[12].get_position()
+    if cols[0] == 'HCNM_CQ':
+        # Get the bounding boxes of the key subplots in figure coordinates (from 0 to 1)
+        bbox0 = axes[0].get_position()
+        bbox4 = axes[4].get_position()
+        bbox5 = axes[5].get_position()
+        bbox9 = axes[9].get_position()
+        bbox12 = axes[12].get_position()
+        
+        # Define the vertices of the polygon that will enclose the subplots
+        
+        vertices = [
+            (bbox0.x0-0.045, bbox0.y1+0.015),     # Top-left of HCNM_CQ
+            (bbox12.x1+0.01, bbox12.y1+0.015),    # Top-right of ws_dmc
+            (bbox12.x1+0.01, bbox12.y0-0.015),    # Bottom-right of ws_dmc
+            (bbox9.x1+0.01 , bbox9.y1+0.0133),    # Top-right of blh_era5
+            (bbox9.x1+0.01 , bbox9.y0-0.015),     # Bottom-right of blh_era5
+            (bbox5.x0-0.04 , bbox5.y0-0.015),     # Bottom-left of MP25_CQ
+            (bbox5.x0-0.04 , bbox5.y1+0.0133),    # Top-left of MP25_CQ
+            (bbox0.x0-0.045, bbox0.y0-0.015),     # Bottom-left of HCNM_CQ
+        ]
+        
+        # Create the polygon patch
+        highlighter = patches.Polygon(
+            vertices,
+            edgecolor='grey',
+            facecolor='none', # No fill
+            linestyle='--',
+            linewidth=2,
+            alpha=0.5,
+            closed=True,
+            transform=fig.transFigure, # Use figure coordinates
+            clip_on=False # Allow drawing outside of axes area
+        )
+        
+        # Add the patch to the figure
+        fig.add_artist(highlighter)
     
-    # Define the vertices of the polygon that will enclose the subplots
-    
-    vertices = [
-        (bbox0.x0-0.045, bbox0.y1+0.015),     # Top-left of HCNM_CQ
-        (bbox12.x1+0.01, bbox12.y1+0.015),    # Top-right of ws_dmc
-        (bbox12.x1+0.01, bbox12.y0-0.015),    # Bottom-right of ws_dmc
-        (bbox9.x1+0.01 , bbox9.y1+0.0133),    # Top-right of blh_era5
-        (bbox9.x1+0.01 , bbox9.y0-0.015),     # Bottom-right of blh_era5
-        (bbox5.x0-0.04 , bbox5.y0-0.015),     # Bottom-left of MP25_CQ
-        (bbox5.x0-0.04 , bbox5.y1+0.0133),    # Top-left of MP25_CQ
-        (bbox0.x0-0.045, bbox0.y0-0.015),     # Bottom-left of HCNM_CQ
-    ]
-    
-    # Create the polygon patch
-    highlighter = patches.Polygon(
-        vertices,
-        edgecolor='grey',
-        facecolor='none', # No fill
-        linestyle='--',
-        linewidth=2,
-        alpha=0.5,
-        closed=True,
-        transform=fig.transFigure, # Use figure coordinates
-        clip_on=False # Allow drawing outside of axes area
-    )
-    
-    # Add the patch to the figure
-    fig.add_artist(highlighter)
-    
-    # Guardamos
-    fig.savefig(path_fig+f'ACE/ValorHorario/VH_Cl{cl}.png', dpi=300)
+    # # Guardamos
+    # if DF_h_file[3:5]=='ha':
+    #     fig.savefig(path_fig+f'ACE/ValorHorario/AH_Cl{cl}.png', dpi=300)
+    # else:
+    #     fig.savefig(path_fig+f'ACE/ValorHorario/VH_Cl{cl}.png', dpi=300)
     
 
 #%% 12. Export cluster dates for composites

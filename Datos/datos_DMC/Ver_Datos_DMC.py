@@ -92,30 +92,27 @@ V = pd.read_csv(path+'V/viento_2019_2023.csv', sep=';', header=0,
 V = V.loc[~V.index.duplicated(),:]
 V = V.shift(periods=-4,freq='h')# pasamos a UTC-4
 
-# resampleamos dirección 
-WD = V.drop(columns=['ws'])
-WD['u'] = np.sin(np.deg2rad(WD['wd']))
-WD['v'] = np.cos(np.deg2rad(WD['wd']))
-WD = WD.resample(f).mean()
 
-WD['rad'] = np.arctan2(WD['u'], WD['v'])
-WD['deg'] = np.rad2deg(WD['rad']) % 360  # Wrap to 0–360°
+# resampleamos dirección 
+V_aux = V.copy()
+V_aux['u'] = np.sin(np.deg2rad(V_aux['wd']))
+V_aux['v'] = np.cos(np.deg2rad(V_aux['wd']))
+V_aux = V_aux.resample(f).mean()
+
+V_aux['rad'] = np.arctan2(V_aux['u'], V_aux['v'])
+V_aux['deg'] = np.rad2deg(V_aux['rad']) % 360  # Wrap to 0–360°
 
 # resampleamos 
 V = V.resample(f).mean()
-V['wd'] = WD['deg']
+V['wd'] = V_aux['deg']
 
-# u y v
+## U y V:
+    
+# Calculo en base a promedios horarios de wd (lo que hice originalmente)
 V['u'] = (-1)*np.sin(np.deg2rad(V['wd']))*V['ws']/1.944
 V['v'] = (-1)*np.cos(np.deg2rad(V['wd']))*V['ws']/1.944
 V['ws'] = V['ws']/1.944
-#%%
-yr = 22
-d1 = pd.to_datetime(f'20{yr}-06-17 00:00:00')
-d2 = pd.to_datetime(f'20{yr}-06-25 23:00:00')
 
-V.loc[d1:d2,['ws','wd']].plot(subplots=True,layout=(2,1),figsize=(10,4))
-plt.tight_layout()
 
 
 #%% Juntamos Datos 

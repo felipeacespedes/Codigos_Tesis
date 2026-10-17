@@ -119,7 +119,7 @@ Princ = pd.read_csv(path+'Principal.csv',index_col='date',parse_dates=True,
                              ])
 Princ = Princ.loc[d1:d2]
 
-# Principal
+# Quintero
 path = 'C:/Users/felip/Desktop/U/Tesis/Datos/Datos_Sinca/Estaciones/Quintero/'
 Quint = pd.read_csv(path+'Quintero.csv',index_col='date',parse_dates=True,
                     usecols=['date','u10','v10','wd10','ws10'])
@@ -199,8 +199,8 @@ met = pd.concat([U,V,WS,WD,DMC,Princ,Quint,ERA5], axis=1).columns.tolist()
 # DF_h['T59'] = T59['T59'].asfreq('h',method='ffill')
 
 # Guardamos
-# DF_h.index.names = ['date']
-# DF_h.to_csv(path_data+'DF_h.csv')
+DF_h.index.names = ['date']
+DF_h.to_csv(path_data+'DF_h.csv')
 
 
 #####################################################

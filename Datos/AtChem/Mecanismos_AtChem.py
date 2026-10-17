@@ -1080,7 +1080,7 @@ LR = LR.rename(columns=name_map)
 
 # Definimos compuestos a plotear y a dejar en el eje derecho
 comp_tot = LR.columns[0:5]
-ax = LR.loc[d1:d2,comp_tot].plot(figsize=(10,4),grid=True,
+ax = LR.loc[d1:d2,comp_tot].plot(figsize=(10,5),grid=True,
                                  title='Mecanismos de perdida '+comp)
 ax.legend(fontsize=8,loc='upper left')
 
@@ -1132,7 +1132,7 @@ plt.tight_layout()
 
 #%% Prod
 
-# comp = 'NO2'
+comp = 'OH'
 PR, nm = DF_reacts(PrR,comp,n_steps,d0,d1,d2)
 D1 = pd.to_datetime(d1)
 D2 = pd.to_datetime(d2)
@@ -1142,20 +1142,21 @@ name_map = nm['name'].to_dict()
 PR = PR.rename(columns=name_map)
 
 # Colormap para los ejes-y
-color=0
+color=1
 cmap = plt.get_cmap('tab10')
 
 # Definimos compuestos a plotear y a dejar en el eje derecho
-n=6
-comp_left = PR.columns[0:2]
-comp_right = PR.columns[2:n]
-# ax = PR.loc[d1:d2,comp_tot].plot(figsize=(10,4),grid=True, 
-#                                  secondary_y=comp_sa, mark_right=False
-#                                  # ,title='Mecanismos de producción '+comp
+n=5
+comp_left = PR.columns[0:1]
+comp_right = PR.columns[1:n]
+# ax = PR.loc[d1:d2,PR.columns[0:n]].plot(figsize=(10,4),grid=True, 
+#                                  secondary_y=comp_left, mark_right=False,
+#                                  title='Mecanismos de producción '+comp
 #                                  )
 
 ax = PR.loc[d1:d2, comp_left].plot(figsize=(10,5), grid=True)
-PR.loc[d1:d2, comp_right].plot(ax=ax, secondary_y=True, mark_right=False)
+PR.loc[d1:d2, comp_right].plot(ax=ax, secondary_y=True, mark_right=False,
+                               title='Mecanismos de producción '+comp)
 
 
 ax.legend(comp_left,fontsize=9,loc='upper left')
@@ -1184,7 +1185,7 @@ plt.tight_layout()
 #             D2.strftime('%m-%d-%H%M')+'.png',dpi=300)
 
 #%% Perd
-comp = 'O3'
+comp = 'OH'
 LR, nm = DF_reacts(LoR,comp,n_steps,d0,d1,d2)
 D1 = pd.to_datetime(d1)
 D2 = pd.to_datetime(d2)
@@ -1198,10 +1199,10 @@ color=0
 cmap = plt.get_cmap('tab10')
 
 # Definimos compuestos a plotear y a dejar en el eje derecho
-n = 10
+n = 5
 comp_tot = LR.columns[0:n]
 comp_sa = LR.columns[2:n]
-ax = LR.loc[d1:d2,comp_tot].plot(figsize=(10,4),grid=True, 
+ax = LR.loc[d1:d2,comp_tot].plot(figsize=(10,5),grid=True, 
                                  secondary_y=comp_sa,mark_right=False,
                                  title='Mecanismos de perdida '+comp)
 ax.legend(fontsize=9,loc='upper left')
